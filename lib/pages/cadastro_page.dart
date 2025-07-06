@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:my_app/pages/lista_tarefas_page.dart';
 import 'login_page.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
@@ -13,6 +16,13 @@ class _CadastroPageState extends State<CadastroPage> {
   final nomeController = TextEditingController();
   final emailController = TextEditingController();
   final senhaController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> _salvarCredenciais(String email, String senha) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('email', email);
+    await prefs.setString('senha', senha);
+  }
 
   @override
   void dispose() {
@@ -22,7 +32,11 @@ class _CadastroPageState extends State<CadastroPage> {
     super.dispose();
   }
 
-  void cadastrar() {
+  Future<void> cadastrar() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final nome = nomeController.text.trim();
     final email = emailController.text.trim();
     final senha = senhaController.text.trim();
@@ -35,6 +49,9 @@ class _CadastroPageState extends State<CadastroPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Preencha todos os campos')));
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
@@ -42,6 +59,9 @@ class _CadastroPageState extends State<CadastroPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Email inválido')));
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
@@ -49,25 +69,58 @@ class _CadastroPageState extends State<CadastroPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Senha deve ter ao menos 6 caracteres')),
       );
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
-    // Aqui você pode adicionar lógica para cadastro no backend ou local
+    try {
+      final response = await http.post(
+        Uri.parse('http://26.68.55.68:8080/api/usuarios/registrar'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'nome': nome,
+          'email': email,
+          'senha': senha,
+        }),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cadastro realizado com sucesso!')),
-    );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await _salvarCredenciais(email, senha);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+        );
 
-    // Limpa os campos
-    nomeController.clear();
-    emailController.clear();
-    senhaController.clear();
+        // Limpa os campos
+        nomeController.clear();
+        emailController.clear();
+        senhaController.clear();
 
-    // Se quiser, pode voltar para a página de login, por exemplo:
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ListaTarefasPage()),
-    );
+        // Navega para a página de tarefas
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ListaTarefasPage()),
+        );
+      } else {
+        // Se a API retornar um erro, mostre a mensagem
+        final errorMessage =
+            jsonDecode(response.body)['message'] ?? 'Erro ao cadastrar';
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro de conexão: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -122,21 +175,27 @@ class _CadastroPageState extends State<CadastroPage> {
                   vertical: 12,
                 ),
               ),
-              onPressed: cadastrar,
-              child: const Text(
-                'Cadastrar',
-                style: TextStyle(color: Colors.white),
-              ),
+              onPressed: isLoading ? null : cadastrar,
+              child:
+                  isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                        'Cadastrar',
+                        style: TextStyle(color: Colors.white),
+                      ),
             ),
             const SizedBox(height: 20),
             const Text('Já possui uma conta?'),
             TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                );
-              },
+              onPressed:
+                  isLoading
+                      ? null
+                      : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                        );
+                      },
               child: const Text(
                 'Fazer login',
                 style: TextStyle(color: Colors.deepPurple),

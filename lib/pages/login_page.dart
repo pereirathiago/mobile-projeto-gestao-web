@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:my_app/pages/cadastro_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'lista_tarefas_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -67,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                   vertical: 12,
                 ),
               ),
-              onPressed: () {
+              onPressed: () async {
                 final email = emailController.text.trim();
                 final senha = senhaController.text.trim();
 
@@ -89,15 +92,53 @@ class _LoginPageState extends State<LoginPage> {
                   return;
                 }
 
-                // Limpa os campos
-                emailController.clear();
-                senhaController.clear();
+                // Tenta autenticar com a API
+                final url = Uri.parse('http://26.68.55.68:8080/api/tarefas');
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ListaTarefasPage()),
-                );
+                try {
+                  // Simples autenticação HTTP Basic
+                  String basicAuth =
+                      'Basic ' + base64Encode(utf8.encode('$email:$senha'));
+
+                  final response = await http.get(
+                    url,
+                    headers: {'authorization': basicAuth},
+                  );
+
+                  if (response.statusCode == 200) {
+                    // Salva credenciais
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('email', email);
+                    await prefs.setString('senha', senha);
+
+                    // Limpa os campos
+                    emailController.clear();
+                    senhaController.clear();
+
+                    // Navega
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ListaTarefasPage(),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Login inválido: ${response.statusCode}'),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  print('Erro na autenticação: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Erro ao conectar com o servidor'),
+                    ),
+                  );
+                }
               },
+
               child: const Text(
                 'ENTRAR',
                 style: TextStyle(color: Colors.white),

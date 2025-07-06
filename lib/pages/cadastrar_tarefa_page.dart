@@ -25,32 +25,6 @@ class _CadastrarTarefaPageState extends State<CadastrarTarefaPage> {
         child: Column(
           children: [
             TextField(
-              controller: _tituloController,
-              decoration: const InputDecoration(
-                labelText: 'Digite o título da tarefa',
-              ),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<DateTime?>(
-              value: _dataSelecionada,
-              decoration: const InputDecoration(labelText: 'Selecionar Data'),
-              items:
-                  [hojeSemHora, amanhaSemHora, null].map((date) {
-                    return DropdownMenuItem<DateTime?>(
-                      value: date,
-                      child: Text(
-                        date == null
-                            ? 'Sem data'
-                            : date == hojeSemHora
-                            ? 'Hoje'
-                            : 'Amanhã',
-                      ),
-                    );
-                  }).toList(),
-              onChanged: (value) => setState(() => _dataSelecionada = value),
-            ),
-            const SizedBox(height: 12),
-            TextField(
               controller: _descricaoController,
               decoration: const InputDecoration(
                 labelText: 'Digite uma descrição',
@@ -65,7 +39,6 @@ class _CadastrarTarefaPageState extends State<CadastrarTarefaPage> {
                 Navigator.pop(context, {
                   'titulo': _tituloController.text,
                   'descricao': _descricaoController.text,
-                  'data': _dataSelecionada,
                 });
               },
               child: const Text(

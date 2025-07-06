@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class EditarTarefaPage extends StatefulWidget {
-  final String tituloInicial;
+  final int id;
   final String descricaoInicial;
-  final DateTime? dataInicial;
+  final bool concluidaInicial;
 
   const EditarTarefaPage({
     super.key,
-    required this.tituloInicial,
+    required this.id,
     required this.descricaoInicial,
-    this.dataInicial,
+    required this.concluidaInicial,
   });
 
   @override
@@ -17,31 +17,24 @@ class EditarTarefaPage extends StatefulWidget {
 }
 
 class _EditarTarefaPageState extends State<EditarTarefaPage> {
-  late TextEditingController _tituloController;
   late TextEditingController _descricaoController;
-  DateTime? _dataSelecionada;
+  late bool _concluida;
 
   @override
   void initState() {
     super.initState();
-    _tituloController = TextEditingController(text: widget.tituloInicial);
     _descricaoController = TextEditingController(text: widget.descricaoInicial);
-    _dataSelecionada = widget.dataInicial;
+    _concluida = widget.concluidaInicial;
   }
 
   @override
   void dispose() {
-    _tituloController.dispose();
     _descricaoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final hoje = DateTime.now();
-    final hojeSemHora = DateTime(hoje.year, hoje.month, hoje.day);
-    final amanhaSemHora = hojeSemHora.add(const Duration(days: 1));
-
     return Scaffold(
       appBar: AppBar(title: const Text('Editar Tarefa')),
       body: Padding(
@@ -49,36 +42,17 @@ class _EditarTarefaPageState extends State<EditarTarefaPage> {
         child: Column(
           children: [
             TextField(
-              controller: _tituloController,
-              decoration: const InputDecoration(
-                labelText: 'Digite o título da tarefa',
-              ),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<DateTime?>(
-              value: _dataSelecionada,
-              decoration: const InputDecoration(labelText: 'Selecionar Data'),
-              items:
-                  [hojeSemHora, amanhaSemHora, null].map((date) {
-                    return DropdownMenuItem<DateTime?>(
-                      value: date,
-                      child: Text(
-                        date == null
-                            ? 'Sem data'
-                            : date == hojeSemHora
-                            ? 'Hoje'
-                            : 'Amanhã',
-                      ),
-                    );
-                  }).toList(),
-              onChanged: (value) => setState(() => _dataSelecionada = value),
-            ),
-            const SizedBox(height: 12),
-            TextField(
               controller: _descricaoController,
-              decoration: const InputDecoration(
-                labelText: 'Digite uma descrição',
-              ),
+              decoration: const InputDecoration(labelText: 'Descrição'),
+            ),
+            CheckboxListTile(
+              title: const Text('Concluída'),
+              value: _concluida,
+              onChanged: (value) {
+                setState(() {
+                  _concluida = value ?? false;
+                });
+              },
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -87,9 +61,9 @@ class _EditarTarefaPageState extends State<EditarTarefaPage> {
               ),
               onPressed: () {
                 Navigator.pop(context, {
-                  'titulo': _tituloController.text,
+                  'id': widget.id,
                   'descricao': _descricaoController.text,
-                  'data': _dataSelecionada,
+                  'concluida': _concluida,
                 });
               },
               child: const Text(
