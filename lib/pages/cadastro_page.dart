@@ -4,6 +4,8 @@ import 'package:my_app/pages/lista_tarefas_page.dart';
 import 'login_page.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_app/constantes.dart';
+
 
 class CadastroPage extends StatefulWidget {
   const CadastroPage({super.key});
@@ -77,7 +79,7 @@ class _CadastroPageState extends State<CadastroPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://26.68.55.68:8080/api/usuarios/registrar'),
+        Uri.parse('$baseUrl/usuarios/registrar'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

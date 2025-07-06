@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:my_app/pages/editar_tarefa_page.dart';
 import 'cadastrar_tarefa_page.dart';
 import 'login_page.dart';
+import 'package:my_app/constantes.dart';
 
 class ListaTarefasPage extends StatefulWidget {
   const ListaTarefasPage({super.key});
@@ -39,7 +40,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
     }
 
     final client = BasicAuthClient(email, senha);
-    final url = Uri.parse('http://26.68.55.68:8080/api/tarefas');
+    final url = Uri.parse('$baseUrl/tarefas');
 
     try {
       final response = await client.get(url);
@@ -83,7 +84,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
     }
 
     final client = BasicAuthClient(email, senha);
-    final url = Uri.parse('http://26.68.55.68:8080/api/tarefas');
+    final url = Uri.parse('$baseUrl/tarefas');
 
     final body = jsonEncode({'descricao': descricao, 'concluida': concluida});
 
@@ -127,7 +128,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
 
     final tarefaId = tarefas[index]['id'];
     final client = BasicAuthClient(email, senha);
-    final url = Uri.parse('http://26.68.55.68:8080/api/tarefas/$tarefaId');
+    final url = Uri.parse('$baseUrl/tarefas/$tarefaId');
 
     try {
       final response = await client.delete(url);
@@ -162,7 +163,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
     final tarefaId = tarefa['id'];
 
     final client = BasicAuthClient(email, senha);
-    final url = Uri.parse('http://26.68.55.68:8080/api/tarefas/$tarefaId');
+    final url = Uri.parse('$baseUrl/tarefas/$tarefaId');
 
     final body = jsonEncode({
       'descricao': tarefa['descricao'],
@@ -203,7 +204,7 @@ class _ListaTarefasPageState extends State<ListaTarefasPage> {
     }
 
     final client = BasicAuthClient(email, senha);
-    final url = Uri.parse('http://26.68.55.68:8080/api/tarefas/$id');
+    final url = Uri.parse('$baseUrl/tarefas/$id');
 
     final body = jsonEncode({'descricao': descricao, 'concluida': concluida});
 

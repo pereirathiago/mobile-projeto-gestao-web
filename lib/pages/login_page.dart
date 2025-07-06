@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:my_app/pages/cadastro_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'lista_tarefas_page.dart';
+import 'package:my_app/constantes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -93,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                 }
 
                 // Tenta autenticar com a API
-                final url = Uri.parse('http://26.68.55.68:8080/api/tarefas');
+                final url = Uri.parse('$baseUrl/tarefas');
 
                 try {
                   // Simples autenticação HTTP Basic
